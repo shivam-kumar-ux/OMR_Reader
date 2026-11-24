@@ -6,7 +6,11 @@ import {
   BarChart3, 
   LogOut, 
   Shield, 
-  Layers
+  Layers,
+  Award,
+  Users,
+  FileSpreadsheet,
+  ShieldAlert
 } from 'lucide-react';
 import { getStoredUser, clearAuthToken, getAuthToken } from './api/client';
 import { LoginPage } from './pages/LoginPage';
@@ -14,6 +18,10 @@ import { DashboardPage } from './pages/DashboardPage';
 import { ExamsPage } from './pages/ExamsPage';
 import { ScanPage } from './pages/ScanPage';
 import { VerifyPage } from './pages/VerifyPage';
+import { ResultsPage } from './pages/ResultsPage';
+import { StudentsPage } from './pages/StudentsPage';
+import { ReportsPage } from './pages/ReportsPage';
+import { AdminPage } from './pages/AdminPage';
 
 export const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any | null>(getStoredUser());
@@ -43,6 +51,8 @@ export const App: React.FC = () => {
     return <LoginPage onLoginSuccess={(u) => setCurrentUser(u)} />;
   }
 
+  const isAdmin = currentUser.role === 'Admin';
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Top Navbar */}
@@ -69,51 +79,101 @@ export const App: React.FC = () => {
             <nav className="hidden md:flex items-center space-x-1">
               <button
                 onClick={() => setCurrentTab('dashboard')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   currentTab === 'dashboard'
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <BarChart3 className="w-4 h-4" />
+                <BarChart3 className="w-3.5 h-3.5" />
                 Dashboard
               </button>
 
               <button
                 onClick={() => setCurrentTab('exams')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   currentTab === 'exams'
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <FileText className="w-4 h-4" />
-                Exams & Keys
+                <FileText className="w-3.5 h-3.5" />
+                Exams
               </button>
 
               <button
                 onClick={() => setCurrentTab('scan')}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                   currentTab === 'scan'
                     ? 'bg-indigo-50 text-indigo-700'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                <Camera className="w-4 h-4" />
-                Scan & Ingest
+                <Camera className="w-3.5 h-3.5" />
+                Scan
               </button>
+
+              <button
+                onClick={() => setCurrentTab('results')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  currentTab === 'results'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5" />
+                Results
+              </button>
+
+              <button
+                onClick={() => setCurrentTab('students')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  currentTab === 'students'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5" />
+                Students
+              </button>
+
+              <button
+                onClick={() => setCurrentTab('reports')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  currentTab === 'reports'
+                    ? 'bg-indigo-50 text-indigo-700'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                }`}
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" />
+                Reports
+              </button>
+
+              {isAdmin && (
+                <button
+                  onClick={() => setCurrentTab('admin')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    currentTab === 'admin'
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  }`}
+                >
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  Admin
+                </button>
+              )}
 
               {activeVerifyId && (
                 <button
                   onClick={() => setCurrentTab('verify')}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     currentTab === 'verify'
-                      ? 'bg-amber-50 text-amber-700 ring-1 ring-amber-300'
-                      : 'text-amber-600 hover:bg-amber-50'
+                      ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-400'
+                      : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
                   }`}
                 >
-                  <CheckSquare className="w-4 h-4" />
-                  Verify Active Sheet (#{activeVerifyId})
+                  <CheckSquare className="w-3.5 h-3.5" />
+                  Verify (#{activeVerifyId})
                 </button>
               )}
             </nav>
@@ -167,6 +227,28 @@ export const App: React.FC = () => {
           <ScanPage onNavigateToVerify={handleNavigateToVerify} />
         )}
 
+        {currentTab === 'results' && (
+          <ResultsPage 
+            onNavigateToVerify={handleNavigateToVerify}
+            onNavigateToStudent={(_sid) => {
+              setCurrentTab('students');
+            }}
+          />
+        )}
+
+        {currentTab === 'students' && (
+          <StudentsPage
+            onNavigateToResult={(_rid) => {
+              setCurrentTab('results');
+            }}
+            onNavigateToVerify={handleNavigateToVerify}
+          />
+        )}
+
+        {currentTab === 'reports' && <ReportsPage />}
+
+        {currentTab === 'admin' && <AdminPage />}
+
         {currentTab === 'verify' && (
           activeVerifyId ? (
             <VerifyPage
@@ -181,7 +263,7 @@ export const App: React.FC = () => {
               </div>
               <h3 className="text-base font-bold text-slate-800">No Sheet Selected for Verification</h3>
               <p className="text-sm text-slate-500 mt-2">
-                Select a flagged sheet from the Scan tab or the Dashboard to open side-by-side verification.
+                Select a flagged sheet from the Scan tab or the Results tab to open side-by-side verification.
               </p>
               <button
                 onClick={() => setCurrentTab('scan')}

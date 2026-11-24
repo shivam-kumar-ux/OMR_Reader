@@ -118,10 +118,17 @@ export const api = {
     request(`/scan/scanner-folder?exam_id=${examId}`, { method: 'POST' }),
 
   // Results & Verification
+  listResults: (examId?: number, status?: string) =>
+    request(`/results?${examId ? `exam_id=${examId}&` : ''}${status ? `status=${status}` : ''}`),
   getResult: (id: number) => request(`/results/${id}`),
   confirmReview: (data: any) => request('/results/confirm', { method: 'POST', body: JSON.stringify(data) }),
   recheckResult: (id: number, stricterThreshold = true) =>
     request(`/results/${id}/recheck`, { method: 'POST', body: JSON.stringify({ stricter_threshold: stricterThreshold }) }),
+
+  // Reports
+  downloadExamPdf: (examId: number) => request(`/reports/exam/${examId}/pdf`),
+  downloadExamExcel: (examId: number) => request(`/reports/exam/${examId}/excel`),
+  downloadResultPdf: (resultId: number) => request(`/reports/result/${resultId}/pdf`),
 
   // Students
   searchStudents: (q?: string) => request(`/students${q ? `?q=${encodeURIComponent(q)}` : ''}`),
@@ -131,4 +138,8 @@ export const api = {
   listUsers: () => request('/users'),
   createUser: (data: any) => request('/users', { method: 'POST', body: JSON.stringify(data) }),
   updateUser: (id: number, data: any) => request(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  getAuditLogs: (limit = 50, offset = 0, action?: string) =>
+    request(`/admin/audit-logs?limit=${limit}&offset=${offset}${action ? `&action=${action}` : ''}`),
+  getSettings: () => request('/admin/settings'),
+  updateSettings: (data: any) => request('/admin/settings', { method: 'PUT', body: JSON.stringify(data) }),
 };

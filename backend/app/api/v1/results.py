@@ -23,6 +23,49 @@ from backend.app.storage import get_storage_provider
 router = APIRouter(prefix="/results", tags=["Results & Verification"])
 
 
+@router.get("")
+def list_results(
+    exam_id: Optional[int] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
+    offset: int = 0,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    List evaluation results with optional filtering by exam and status.
+    """
+    query = db.query(Result)
+    if exam_id:
+        query = query.filter(Result.exam_id == exam_id)
+    if status:
+        query = query.filter(Result.status == status)
+
+    total = query.count()
+    results = query.order_by(Result.created_at.desc()).offset(offset).limit(limit).all()
+
+    items = []
+    for r in results:
+        items.append({
+            "id": r.id,
+            "student_id": r.student_id,
+            "exam_id": r.exam_id,
+            "student_name": r.student.name_final if r.student else None,
+            "student_roll": r.student.roll_no if r.student else None,
+            "exam_name": r.exam.name if r.exam else None,
+            "set_code": r.set_code,
+            "total_score": r.total_score,
+            "correct_count": r.correct_count,
+            "wrong_count": r.wrong_count,
+            "not_attempted_count": r.not_attempted_count,
+            "status": r.status,
+            "confidence_score": r.confidence_score,
+            "created_at": r.created_at.isoformat() if r.created_at else None,
+        })
+
+    return {"total": total, "items": items}
+
+
 @router.get("/{result_id}")
 def get_result_details(
     result_id: int,

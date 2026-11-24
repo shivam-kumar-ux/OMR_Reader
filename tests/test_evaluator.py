@@ -127,9 +127,8 @@ def test_validator_duplicate_roll_number():
                 name="Validation Exam",
                 code="VAL-01",
                 total_questions=50,
-                sets_config=["A"],
-                correct_mark=1.0,
-                negative_mark=0.0
+                marks_per_correct=1.0,
+                negative_marks=0.0
             )
             db.add(exam)
             db.commit()

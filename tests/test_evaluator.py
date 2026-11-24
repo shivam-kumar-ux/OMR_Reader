@@ -122,6 +122,18 @@ def test_validator_duplicate_roll_number():
     try:
         # Create exam & student
         exam = db.query(Exam).first()
+        if not exam:
+            exam = Exam(
+                name="Validation Exam",
+                code="VAL-01",
+                total_questions=50,
+                sets_config=["A"],
+                correct_mark=1.0,
+                negative_mark=0.0
+            )
+            db.add(exam)
+            db.commit()
+            db.refresh(exam)
         assert exam is not None
 
         # Clean student with roll "888777"

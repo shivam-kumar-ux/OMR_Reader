@@ -263,7 +263,7 @@ def generate_standard_omr_sheet(output_dir: str = "./samples/blank") -> Dict[str
         })
 
     # Separator Line between Personal Info and Answer Area
-    sep_y = 620
+    sep_y = 810
     cv2.line(img, (100, sep_y), (1500, sep_y), (0, 0, 0), 2)
 
     # 4. Answers Section Header

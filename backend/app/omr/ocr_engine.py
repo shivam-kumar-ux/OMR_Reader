@@ -30,17 +30,18 @@ class OCREngine:
         Calculates similarity ratio between two strings (0.0 to 1.0).
         Normalizes spaces and casing.
         """
-        clean1 = re.sub(r"\s+", " ", (s1 or "").strip().upper())
-        clean2 = re.sub(r"\s+", " ", (s2 or "").strip().upper())
+        # Remove all spaces because boxed OCR outputs individual characters separated by spaces
+        no_space1 = re.sub(r"\s+", "", (s1 or "").strip().upper())
+        no_space2 = re.sub(r"\s+", "", (s2 or "").strip().upper())
 
-        if not clean1 and not clean2:
+        if not no_space1 and not no_space2:
             return 1.0
-        if not clean1 or not clean2:
+        if not no_space1 or not no_space2:
             return 0.0
-        if clean1 == clean2:
+        if no_space1 == no_space2:
             return 1.0
 
-        return difflib.SequenceMatcher(None, clean1, clean2).ratio()
+        return difflib.SequenceMatcher(None, no_space1, no_space2).ratio()
 
     def crop_field_boxes(
         self,

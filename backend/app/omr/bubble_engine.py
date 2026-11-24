@@ -26,7 +26,7 @@ class BubbleDecisionEngine:
     def __init__(
         self,
         fill_threshold: float = 0.45,
-        uncertain_low: float = 0.24,
+        uncertain_low: float = 0.30,
         uncertain_high: float = 0.45,
     ):
         self.fill_threshold = fill_threshold
@@ -97,10 +97,10 @@ class BubbleDecisionEngine:
 
         contrast = float((bg_mean - interior_mean) / max(bg_mean, 1.0))
 
-        # Preliminary state
-        if fill_ratio >= self.fill_threshold:
+        # Classification based on fill ratio AND contrast with background paper
+        if fill_ratio >= self.fill_threshold and contrast >= 0.28:
             state = BubbleState.FILLED
-        elif fill_ratio <= self.uncertain_low:
+        elif fill_ratio <= self.uncertain_low or contrast <= 0.16:
             state = BubbleState.EMPTY
         else:
             state = BubbleState.UNCERTAIN

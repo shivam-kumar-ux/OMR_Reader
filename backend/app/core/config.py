@@ -25,9 +25,9 @@ class Settings(BaseSettings):
 
     # OMR & Accuracy Thresholds
     CONFIDENCE_THRESHOLD_AUTO_ACCEPT: float = 0.88
-    BUBBLE_FILL_THRESHOLD: float = 0.35
-    BUBBLE_UNCERTAIN_LOW: float = 0.20
-    BUBBLE_UNCERTAIN_HIGH: float = 0.35
+    BUBBLE_FILL_THRESHOLD: float = 0.45
+    BUBBLE_UNCERTAIN_LOW: float = 0.24
+    BUBBLE_UNCERTAIN_HIGH: float = 0.45
     OCR_NAME_SIMILARITY_THRESHOLD: float = 0.75
 
     # CORS

@@ -42,7 +42,7 @@ frontend/.vite/
 
 # OMR / Scans storage (local dev)
 uploads/
-storage/
+/storage/
 scans_input/
 temp/
 *.log

@@ -1,0 +1,70 @@
+name: OMR System CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-and-accuracy-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: "pip"
+
+    - name: Install System Dependencies (OpenCV & PDFium)
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio
+
+    - name: Run Database Migrations (SQLite Test Mode)
+      run: |
+        python -c "from backend.app.db.database import init_db; init_db()"
+        python backend/scripts/seed.py
+
+    - name: Run Backend Unit & Integration Tests
+      run: |
+        pytest -v tests/test_auth.py tests/test_database.py tests/test_exams.py tests/test_calibration.py tests/test_omr_engine.py tests/test_personal_data.py tests/test_evaluator.py tests/test_scan_api.py tests/test_reports.py
+
+    - name: Run Accuracy Benchmark Suite
+      run: |
+        python backend/scripts/generate_accuracy_dataset.py
+        pytest -s -v tests/accuracy_test.py
+
+    - name: Validate Serverless Bundle Size (< 500 MB)
+      run: |
+        python backend/scripts/check_bundle_size.py
+
+  frontend-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+        cache: "npm"
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install Dependencies & Build Frontend
+      working-directory: frontend
+      run: |
+        npm ci || npm install
+        npm run build

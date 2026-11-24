@@ -1,0 +1,16 @@
+# Exclude heavy dev files from Vercel Serverless Function bundle (< 500 MB limit)
+.venv/
+.git/
+.github/
+tests/
+samples/filled/
+scans_input/
+storage/
+node_modules/
+frontend/node_modules/
+frontend/src/
+*.log
+*.sqlite
+*.pyc
+__pycache__/
+.pytest_cache/

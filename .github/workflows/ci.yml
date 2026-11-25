@@ -9,6 +9,11 @@ on:
 jobs:
   backend-and-accuracy-tests:
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
+      DATABASE_URL: sqlite:///./test_ci.db
+      APP_SECRET_KEY: test-ci-secret-key-for-automated-verification
+      STORAGE_PROVIDER: local
 
     steps:
     - name: Checkout Code
@@ -23,7 +28,7 @@ jobs:
     - name: Install System Dependencies (OpenCV & PDFium)
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
+        sudo apt-get install -y libgl1 libglib2.0-0 || sudo apt-get install -y libgl1-mesa-glx libglib2.0-0
 
     - name: Install Python Dependencies
       run: |
@@ -31,9 +36,8 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-asyncio
 
-    - name: Run Database Migrations (SQLite Test Mode)
+    - name: Initialize Database (SQLite Test Mode)
       run: |
-        python -c "from backend.app.db.database import init_db; init_db()"
         python backend/scripts/seed.py
 
     - name: Run Backend Unit & Integration Tests

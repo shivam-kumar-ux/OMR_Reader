@@ -46,6 +46,9 @@ uploads/
 scans_input/
 temp/
 *.log
+samples/
+.venv/
+__pycache__/
 
 # IDE
 .vscode/

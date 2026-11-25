@@ -9,12 +9,19 @@ engine_kwargs = {
     "future": True,
 }
 
-# Normalize postgres:// or bare postgresql:// to postgresql+psycopg2://
+# Normalize postgres:// or bare postgresql:// to postgresql+psycopg2:// or postgresql+pg8000://
 db_url = settings.DATABASE_URL
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
-elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
-    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+if "postgres" in db_url:
+    driver = "postgresql+psycopg2://"
+    try:
+        import psycopg2
+    except ImportError:
+        driver = "postgresql+pg8000://"
+
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", driver, 1)
+    elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+        db_url = db_url.replace("postgresql://", driver, 1)
 
 if db_url.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}

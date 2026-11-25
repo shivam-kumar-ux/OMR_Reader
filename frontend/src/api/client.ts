@@ -51,12 +51,19 @@ async function request(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!res.ok) {
-    let errDetail = 'Request failed';
+    let errDetail = `Server error (${res.status})`;
     try {
-      const errJson = await res.json();
-      errDetail = errJson.detail || JSON.stringify(errJson);
+      const text = await res.text();
+      try {
+        const errJson = JSON.parse(text);
+        errDetail = errJson.detail || JSON.stringify(errJson);
+      } catch {
+        if (text && text.trim()) {
+          errDetail = text;
+        }
+      }
     } catch {
-      errDetail = await res.text();
+      // ignore
     }
     throw new Error(errDetail);
   }

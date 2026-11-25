@@ -1,17 +1,22 @@
+import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.api.v1 import api_v1_router
+from backend.app.api.v1.auth import router as auth_router
+from backend.app.api.v1.users import router as users_router
+from backend.app.api.v1.exams import router as exams_router
+from backend.app.api.v1.calibration import router as calibration_router
+from backend.app.api.v1.scan import router as scan_router
+from backend.app.api.v1.results import router as results_router
+from backend.app.api.v1.students import router as students_router
+from backend.app.api.v1.reports import router as reports_router
+from backend.app.api.v1.admin import router as admin_router
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Lifespan context manager:
-    Auto-initialize database tables and seed default admin on startup.
-    Ensures zero-setup cloud deployment on serverless platforms (Vercel, etc.).
-    """
+def _init_db_sync():
+    """Sync helper to initialize database tables and seed default admin."""
     try:
         from backend.app.db.session import engine, Base, SessionLocal
         Base.metadata.create_all(bind=engine)
@@ -32,6 +37,18 @@ async def lifespan(app: FastAPI):
                 db.commit()
     except Exception as e:
         print(f"Startup DB init notice: {e}")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    Non-blocking lifespan context manager:
+    Spawns background DB initialization thread so serverless cold start is immediate.
+    """
+    try:
+        asyncio.create_task(asyncio.to_thread(_init_db_sync))
+    except Exception as e:
+        print(f"Lifespan task notice: {e}")
     yield
 
 
@@ -53,10 +70,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
+# Primary API routes (/api/v1/...)
 app.include_router(api_v1_router)
 
+# Secondary alias routes (/v1/...) for reverse proxy rewrite compatibility
+v1_alias_router = APIRouter(prefix="/v1")
+for r in [
+    auth_router, users_router, exams_router, calibration_router,
+    scan_router, results_router, students_router, reports_router, admin_router,
+]:
+    v1_alias_router.include_router(r)
+app.include_router(v1_alias_router)
 
+
+@app.get("/health")
 @app.get("/api/health")
 def health_check():
     return {

@@ -15,8 +15,12 @@ from backend.app.models.models import (
     SheetStatus,
     User,
 )
-from backend.app.omr.engine import OMREngine
-from backend.app.omr.evaluator import EvaluationEngine
+try:
+    from backend.app.omr.engine import OMREngine
+    from backend.app.omr.evaluator import EvaluationEngine
+except Exception:
+    OMREngine = None
+    EvaluationEngine = None
 from backend.app.schemas.scan import ConfirmReviewRequest, RecheckRequest
 from backend.app.storage import get_storage_provider
 

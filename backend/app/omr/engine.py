@@ -1,6 +1,9 @@
 import os
 from typing import Dict, Any, Tuple, Optional, List
-import cv2
+try:
+    import cv2
+except Exception:
+    cv2 = None
 import numpy as np
 
 from backend.app.core.config import settings

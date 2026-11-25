@@ -64,3 +64,15 @@ def health_check():
         "environment": settings.ENVIRONMENT,
         "storage_provider": settings.STORAGE_PROVIDER,
     }
+
+
+@app.get("/test")
+@app.get("/api/test")
+def test_diagnostic():
+    import os
+    return {
+        "status": "ok",
+        "message": "FastAPI is responding normally on Vercel!",
+        "has_database_url": bool(os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_UR")),
+        "db_provider": "postgres" if "postgres" in (os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_UR") or "") else "sqlite",
+    }

@@ -1,0 +1,111 @@
+================================================================================
+🚨 CRITICAL SECURITY ACTION REQUIRED 🚨
+================================================================================
+
+Your Neon PostgreSQL credentials were exposed in GitHub and detected by Neon's
+security scanner. You MUST rotate them immediately.
+
+================================================================================
+ACTION 1: ROTATE NEON CREDENTIALS (DO THIS FIRST!)
+================================================================================
+
+⚠️ URGENT - Your old credentials are compromised
+
+1. Go to: https://console.neon.tech/
+2. Log in with your account
+3. Find project: "delicate-smoke-09511385"
+4. Click on the project
+5. Go to "Connect" section
+6. Click "Reset password" button (generates new credentials)
+7. COPY the new connection string
+8. This new string is your NEW DATABASE_URL
+
+================================================================================
+ACTION 2: UPDATE VERCEL WITH NEW CREDENTIALS
+================================================================================
+
+1. Go to: https://vercel.com/dashboard
+2. Click project: "omr-reader-a3ny"
+3. Click "Settings" → "Environment Variables"
+4. Find the "DATABASE_URL" variable
+5. Click the "..." menu and select "Edit"
+6. Replace the old value with your NEW Neon connection string from Step 1
+7. Click "Save"
+
+================================================================================
+ACTION 3: VERIFY CLEANUP
+================================================================================
+
+The exposed files have been removed from GitHub, but git history still contains
+them. To completely clean the history:
+
+Option A: (Recommended) Use GitHub's built-in secret scanning
+- Go to: https://github.com/shivam-kumar-ux/OMR_Reader
+- Settings → Security & analysis → Secret scanning
+- It will alert if secrets are found in commits
+
+Option B: (If needed) Use git-filter-repo locally
+Run this command to remove exposed files from git history:
+
+cd d:\Coding_SK\OMR_Project
+git install git-filter-repo (if not installed)
+git filter-repo --invert-paths --path GITHUB_AND_VERCEL_SETUP.md
+git filter-repo --invert-paths --path VERCEL_SETUP.md
+git filter-repo --invert-paths --path FINAL_SETUP_SUMMARY.txt
+
+Then force push: git push --force-with-lease origin main
+
+(This is optional - main security issue is that old password is rotated)
+
+================================================================================
+ACTION 4: REDEPLOY ON VERCEL
+================================================================================
+
+After updating DATABASE_URL in Vercel:
+
+1. Go to: https://vercel.com/projects
+2. Click "omr-reader-a3ny"
+3. Click "Deployments" tab
+4. Click on latest deployment
+5. Click "Redeploy" button
+6. Wait for deployment (2-5 minutes)
+
+================================================================================
+VERIFICATION CHECKLIST
+================================================================================
+
+After completing all actions, verify:
+
+□ Neon password rotated (old one no longer works)
+□ DATABASE_URL updated in Vercel with new credentials
+□ Vercel redeployed successfully
+□ Can access: https://omr-reader-a3ny.vercel.app/api/health
+□ Login page loads without errors
+□ Can login with admin/Admin@12345
+□ GitHub shows commits with exposed credentials removed
+□ Neon security alerts cleared
+
+================================================================================
+TIMELINE
+================================================================================
+
+Your old credentials were exposed on:
+- Commit 21fede3 (GITHUB_AND_VERCEL_SETUP.md)
+- Commit b7bab26 (FINAL_SETUP_SUMMARY.txt)
+
+They were removed on:
+- Commit 42d4999 (security: remove exposed Neon credentials)
+
+HOWEVER: Until you rotate the actual Neon password, anyone with access to 
+those commits can connect to your database. ROTATE IMMEDIATELY.
+
+================================================================================
+IF YOU HAVE QUESTIONS
+================================================================================
+
+See: SETUP_INSTRUCTIONS.md (now contains setup info without secrets)
+
+Remember: Never commit DATABASE_URL, API keys, or secrets to git.
+Use Vercel environment variables instead.
+
+================================================================================

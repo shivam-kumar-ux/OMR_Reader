@@ -15,7 +15,7 @@ if "postgres" in db_url:
     driver = "postgresql+psycopg2://"
     try:
         import psycopg2
-    except ImportError:
+    except Exception:
         driver = "postgresql+pg8000://"
 
     if db_url.startswith("postgres://"):
@@ -24,6 +24,9 @@ if "postgres" in db_url:
         db_url = db_url.replace("postgresql://", driver, 1)
 
 if db_url.startswith("sqlite"):
+    import os
+    if settings.IS_SERVERLESS or os.environ.get("VERCEL"):
+        db_url = "sqlite:////tmp/omr_local.db"
     engine_kwargs["connect_args"] = {"check_same_thread": False}
 else:
     # Use NullPool for serverless environments (Vercel, Lambda, Neon, Supabase)

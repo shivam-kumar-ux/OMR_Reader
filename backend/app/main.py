@@ -1,6 +1,6 @@
-import asyncio
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, APIRouter
+import traceback
+from fastapi import FastAPI, APIRouter, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
 from backend.app.api.v1 import api_v1_router
@@ -14,57 +14,30 @@ from backend.app.api.v1.students import router as students_router
 from backend.app.api.v1.reports import router as reports_router
 from backend.app.api.v1.admin import router as admin_router
 
-
-def _init_db_sync():
-    """Sync helper to initialize database tables and seed default admin."""
-    try:
-        from backend.app.db.session import engine, Base, SessionLocal
-        Base.metadata.create_all(bind=engine)
-
-        from backend.app.models.models import User, UserRole
-        from backend.app.core.security import get_password_hash
-        with SessionLocal() as db:
-            admin_user = db.query(User).filter(User.username == "admin").first()
-            if not admin_user:
-                admin = User(
-                    username="admin",
-                    email="admin@omr.local",
-                    hashed_password=get_password_hash("Admin@12345"),
-                    role=UserRole.ADMIN.value,
-                    is_active=True,
-                )
-                db.add(admin)
-                db.commit()
-    except Exception as e:
-        print(f"Startup DB init notice: {e}")
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """
-    Non-blocking lifespan context manager:
-    Spawns background DB initialization thread so serverless cold start is immediate.
-    """
-    try:
-        asyncio.create_task(asyncio.to_thread(_init_db_sync))
-    except Exception as e:
-        print(f"Lifespan task notice: {e}")
-    yield
-
-
 app = FastAPI(
     title="OMR Recognition System API",
     description="High-precision Optical Mark Recognition and evaluation platform with SQL Server backend",
     version="1.0.0",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
-    lifespan=lifespan,
 )
+
+# Global exception handler to surface any server error clearly
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": f"Internal Server Error: {str(exc)}",
+            "type": type(exc).__name__,
+            "traceback": traceback.format_exc().splitlines(),
+        },
+    )
 
 # CORS setup
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS if settings.ENVIRONMENT != "development" else ["*"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

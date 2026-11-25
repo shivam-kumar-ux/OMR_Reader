@@ -1,15 +1,21 @@
 import base64
 import json
 import os
-import cv2
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Response, status
 from sqlalchemy.orm import Session
 
 from backend.app.api.deps import require_operator, get_current_user
 from backend.app.db.session import get_db
 from backend.app.models.models import User
-from backend.app.omr.calibration import OMRCalibrator
+
+try:
+    import cv2
+    import numpy as np
+    from backend.app.omr.calibration import OMRCalibrator
+except Exception:
+    cv2 = None
+    np = None
+    OMRCalibrator = None
 
 router = APIRouter(prefix="/omr", tags=["OMR Calibration & Templates"])
 

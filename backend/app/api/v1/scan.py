@@ -1,7 +1,6 @@
 import os
 import uuid
 from typing import List, Optional
-import cv2
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy.orm import Session
 
@@ -17,13 +16,23 @@ from backend.app.models.models import (
     User,
     AuditLog,
 )
-from backend.app.omr.engine import OMREngine
-from backend.app.omr.evaluator import EvaluationEngine
-from backend.app.omr.preprocessor import ImagePreprocessor
-from backend.app.omr.validator import AccuracyValidator
 from backend.app.schemas.scan import ScanFileStatus, BatchScanResponse
-from backend.app.services.folder_watcher import FolderWatcherService
 from backend.app.storage import get_storage_provider
+
+try:
+    import cv2
+    from backend.app.omr.engine import OMREngine
+    from backend.app.omr.evaluator import EvaluationEngine
+    from backend.app.omr.preprocessor import ImagePreprocessor
+    from backend.app.omr.validator import AccuracyValidator
+    from backend.app.services.folder_watcher import FolderWatcherService
+except Exception:
+    cv2 = None
+    OMREngine = None
+    EvaluationEngine = None
+    ImagePreprocessor = None
+    AccuracyValidator = None
+    FolderWatcherService = None
 
 router = APIRouter(prefix="/scan", tags=["Scanning & OMR Processing"])
 

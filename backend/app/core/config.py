@@ -12,7 +12,15 @@ class Settings(BaseSettings):
 
     # Database
     DATABASE_URL: str = "sqlite:///./omr_local.db"
+    DATABASE_UR: Optional[str] = None
+    APP_SECRET_KE: Optional[str] = None
     IS_SERVERLESS: bool = False
+
+    def model_post_init(self, __context):
+        if self.DATABASE_UR and self.DATABASE_URL == "sqlite:///./omr_local.db":
+            self.DATABASE_URL = self.DATABASE_UR
+        if self.APP_SECRET_KE and self.APP_SECRET_KEY == "omr-secret-key-production-change-secure":
+            self.APP_SECRET_KEY = self.APP_SECRET_KE
 
     # Storage: "local", "azure_blob", "vercel_blob"
     STORAGE_PROVIDER: str = "local"

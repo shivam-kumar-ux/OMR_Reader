@@ -2,7 +2,6 @@ import os
 from typing import List, Tuple, Dict, Any, Union
 import cv2
 import numpy as np
-import pypdfium2 as pdfium
 
 
 class QualityCheckResult:
@@ -44,6 +43,10 @@ class ImagePreprocessor:
 
         if ext == ".pdf" or file_bytes.startswith(b"%PDF-"):
             pages = []
+            try:
+                import pypdfium2 as pdfium
+            except ImportError:
+                raise ValueError("PDF rendering is not supported in the serverless deployment. Please upload PNG or JPEG sheet images.")
             try:
                 pdf = pdfium.PdfDocument(file_bytes)
                 for page_idx in range(len(pdf)):

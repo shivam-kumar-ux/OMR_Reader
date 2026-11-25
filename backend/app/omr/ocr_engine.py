@@ -4,7 +4,11 @@ import re
 from typing import Dict, Any, List, Optional, Tuple
 import cv2
 import numpy as np
-from rapidocr_onnxruntime import RapidOCR
+
+try:
+    from rapidocr_onnxruntime import RapidOCR
+except ImportError:
+    RapidOCR = None
 
 
 class OCREngine:
@@ -19,10 +23,13 @@ class OCREngine:
         self._ocr = None
 
     @property
-    def ocr(self) -> RapidOCR:
-        if self._ocr is None:
-            self._ocr = RapidOCR()
-        return self._ocr
+    def ocr(self):
+        if self._ocr is None and RapidOCR is not None:
+            try:
+                self._ocr = RapidOCR()
+            except Exception:
+                self._ocr = False
+        return self._ocr if self._ocr is not False else None
 
     @staticmethod
     def calculate_similarity(s1: str, s2: str) -> float:
@@ -97,6 +104,9 @@ class OCREngine:
         crop_image = cv2.copyMakeBorder(
             crop_image, 12, 12, 12, 12, cv2.BORDER_CONSTANT, value=[255, 255, 255]
         )
+
+        if self.ocr is None:
+            return ""
 
         try:
             results, _ = self.ocr(crop_image)

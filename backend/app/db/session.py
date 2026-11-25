@@ -9,10 +9,12 @@ engine_kwargs = {
     "future": True,
 }
 
-# Normalize postgres:// URLs (common in Neon, Supabase, Heroku) to postgresql://
+# Normalize postgres:// or bare postgresql:// to postgresql+psycopg2://
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+    db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
 
 if db_url.startswith("sqlite"):
     engine_kwargs["connect_args"] = {"check_same_thread": False}

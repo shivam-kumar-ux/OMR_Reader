@@ -9,13 +9,19 @@ from backend.app.core.security import (
     create_access_token,
     decode_access_token,
 )
-from backend.app.db.session import SessionLocal
+from backend.app.db.session import SessionLocal, engine, Base
 from backend.app.models.models import User, UserRole
 from backend.app.schemas.auth import UserLogin
 from backend.app.schemas.user import UserCreate, UserUpdate
 from backend.app.api.deps import get_current_user, require_admin, require_operator
 from backend.app.api.v1.auth import login, get_current_user_profile
 from backend.app.api.v1.users import list_users, create_user, update_user
+
+
+@pytest.fixture(autouse=True)
+def ensure_db():
+    Base.metadata.create_all(bind=engine)
+    yield
 
 
 def test_password_hashing():

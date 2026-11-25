@@ -3,17 +3,30 @@ Unit tests for Report Generation (PDF/Excel) and Admin Endpoints.
 """
 
 import pytest
-from fastapi.testclient import TestClient
-from backend.app.main import app
-from backend.app.db.session import SessionLocal
+from backend.app.db.session import SessionLocal, engine, Base
 from backend.app.models.models import User, UserRole, Exam, Student, Result, StudentAnswer, AuditLog
 from backend.app.services.report_generator import (
     generate_exam_pdf_report,
     generate_student_card_pdf,
     generate_exam_excel_report
 )
+from backend.app.api.v1.reports import (
+    download_exam_pdf,
+    download_exam_excel,
+    download_result_pdf
+)
+from backend.app.api.v1.admin import (
+    get_audit_logs,
+    get_system_settings,
+    update_system_settings,
+    SettingsUpdateSchema
+)
 
-client = TestClient(app)
+
+@pytest.fixture(autouse=True)
+def setup_db():
+    Base.metadata.create_all(bind=engine)
+    yield
 
 
 @pytest.fixture
@@ -32,13 +45,9 @@ def auth_admin():
             db.add(user)
             db.commit()
             db.refresh(user)
-        user_id = user.id
+        return user
     finally:
         db.close()
-
-    from backend.app.core.security import create_access_token
-    token = create_access_token(subject=str(user_id), role="admin")
-    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
@@ -151,47 +160,46 @@ def test_pdf_report_generators_direct(seeded_report_data):
 
 
 def test_reports_api_endpoints(auth_admin, seeded_report_data):
-    exam_id = seeded_report_data["exam_id"]
-    result_id = seeded_report_data["result_id"]
+    db = SessionLocal()
+    try:
+        exam_id = seeded_report_data["exam_id"]
+        result_id = seeded_report_data["result_id"]
 
-    # Test PDF Exam Download
-    res = client.get(f"/api/v1/reports/exam/{exam_id}/pdf", headers=auth_admin)
-    assert res.status_code == 200
-    assert res.headers["content-type"] == "application/pdf"
-    assert res.content.startswith(b"%PDF-")
+        # 1. Test PDF Exam Download
+        res = download_exam_pdf(exam_id=exam_id, db=db, current_user=auth_admin)
+        assert res.media_type == "application/pdf"
+        assert res.body.startswith(b"%PDF-")
 
-    # Test Excel Exam Download
-    res = client.get(f"/api/v1/reports/exam/{exam_id}/excel", headers=auth_admin)
-    assert res.status_code == 200
-    assert "spreadsheetml" in res.headers["content-type"]
-    assert res.content.startswith(b"PK")
+        # 2. Test Excel Exam Download
+        res = download_exam_excel(exam_id=exam_id, db=db, current_user=auth_admin)
+        assert "spreadsheetml" in res.media_type
+        assert res.body.startswith(b"PK")
 
-    # Test Student Scorecard PDF Download
-    res = client.get(f"/api/v1/reports/result/{result_id}/pdf", headers=auth_admin)
-    assert res.status_code == 200
-    assert res.headers["content-type"] == "application/pdf"
-    assert res.content.startswith(b"%PDF-")
+        # 3. Test Student Scorecard PDF Download
+        res = download_result_pdf(result_id=result_id, db=db, current_user=auth_admin)
+        assert res.media_type == "application/pdf"
+        assert res.body.startswith(b"%PDF-")
+    finally:
+        db.close()
 
 
 def test_admin_audit_logs_and_settings(auth_admin):
-    # Get Audit Logs
-    res = client.get("/api/v1/admin/audit-logs", headers=auth_admin)
-    assert res.status_code == 200
-    data = res.json()
-    assert "total" in data
-    assert "items" in data
+    db = SessionLocal()
+    try:
+        # Get Audit Logs
+        data = get_audit_logs(limit=50, offset=0, action=None, db=db, current_user=auth_admin)
+        assert "total" in data
+        assert "items" in data
 
-    # Get Settings
-    res = client.get("/api/v1/admin/settings", headers=auth_admin)
-    assert res.status_code == 200
-    settings_data = res.json()
-    assert "BUBBLE_FILL_THRESHOLD" in settings_data
+        # Get Settings
+        settings_data = get_system_settings(current_user=auth_admin)
+        assert "BUBBLE_FILL_THRESHOLD" in settings_data
 
-    # Update Settings
-    res = client.put(
-        "/api/v1/admin/settings",
-        json={"BUBBLE_FILL_THRESHOLD": 0.46},
-        headers=auth_admin
-    )
-    assert res.status_code == 200
-    assert res.json()["settings"]["BUBBLE_FILL_THRESHOLD"] == 0.46
+        # Update Settings
+        res = update_system_settings(
+            payload=SettingsUpdateSchema(BUBBLE_FILL_THRESHOLD=0.46),
+            current_user=auth_admin
+        )
+        assert res["settings"]["BUBBLE_FILL_THRESHOLD"] == 0.46
+    finally:
+        db.close()

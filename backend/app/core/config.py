@@ -10,17 +10,22 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
     ALGORITHM: str = "HS256"
 
-    # Database
-    DATABASE_URL: str = "sqlite:///./omr_local.db"
+    # Database - defaults to SQLite for serverless compatibility
+    DATABASE_URL: str = "sqlite:////tmp/omr_local.db"
     DATABASE_UR: Optional[str] = None
     APP_SECRET_KE: Optional[str] = None
-    IS_SERVERLESS: bool = False
+    IS_SERVERLESS: bool = True  # Default to serverless for Vercel
 
     def model_post_init(self, __context):
-        if self.DATABASE_UR and self.DATABASE_URL == "sqlite:///./omr_local.db":
+        # Use external DB if provided, otherwise use SQLite
+        if self.DATABASE_UR and self.DATABASE_UR.strip():
             self.DATABASE_URL = self.DATABASE_UR
-        if self.APP_SECRET_KE and self.APP_SECRET_KEY == "omr-secret-key-production-change-secure":
+        # Allow APP_SECRET_KE override
+        if self.APP_SECRET_KE and self.APP_SECRET_KE.strip() and self.APP_SECRET_KE != "omr-secret-key-production-change-secure":
             self.APP_SECRET_KEY = self.APP_SECRET_KE
+        # Detect if running on Vercel
+        if os.environ.get("VERCEL"):
+            self.IS_SERVERLESS = True
 
     # Storage: "local", "azure_blob", "vercel_blob"
     STORAGE_PROVIDER: str = "local"
@@ -44,6 +49,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://omr-reader-a3ny.vercel.app",
+        "https://*.vercel.app",
     ]
 
     model_config = SettingsConfigDict(

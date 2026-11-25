@@ -3,6 +3,7 @@ from fastapi import FastAPI, APIRouter, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from backend.app.core.config import settings
+from backend.app.db.session import Base, engine, get_fallback_engine
 from backend.app.api.v1 import api_v1_router
 from backend.app.api.v1.auth import router as auth_router
 from backend.app.api.v1.users import router as users_router
@@ -16,11 +17,24 @@ from backend.app.api.v1.admin import router as admin_router
 
 app = FastAPI(
     title="OMR Recognition System API",
-    description="High-precision Optical Mark Recognition and evaluation platform with SQL Server backend",
+    description="High-precision Optical Mark Recognition and evaluation platform",
     version="1.0.0",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None,
 )
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    try:
+        # Create tables in primary database
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables initialized")
+        # Pre-initialize fallback
+        get_fallback_engine()
+        print("✅ Fallback database ready")
+    except Exception as e:
+        print(f"⚠️ Startup initialization error: {e}")
 
 # Global exception handler to surface any server error clearly
 @app.exception_handler(Exception)
@@ -30,11 +44,10 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={
             "detail": f"Internal Server Error: {str(exc)}",
             "type": type(exc).__name__,
-            "traceback": traceback.format_exc().splitlines(),
         },
     )
 
-# CORS setup
+# CORS setup - allow all origins for now (can be restricted later)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -72,7 +85,8 @@ def test_diagnostic():
     import os
     return {
         "status": "ok",
-        "message": "FastAPI is responding normally on Vercel!",
+        "message": "FastAPI is responding normally!",
         "has_database_url": bool(os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_UR")),
         "db_provider": "postgres" if "postgres" in (os.environ.get("DATABASE_URL") or os.environ.get("DATABASE_UR") or "") else "sqlite",
+        "is_serverless": settings.IS_SERVERLESS,
     }

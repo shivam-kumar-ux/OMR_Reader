@@ -1,0 +1,4 @@
+DEPLOYMENT_TRIGGER=2026-11-26T03:15:00Z
+REASON=Force deployment with Vercel v2 builds format
+CONFIG=vercel.json v2 builds (not services)
+STATUS=READY_TO_DEPLOY

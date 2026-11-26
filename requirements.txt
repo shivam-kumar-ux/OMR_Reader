@@ -1,20 +1,35 @@
-fastapi>=0.110.0
-uvicorn[standard]>=0.28.0
-pydantic>=2.6.0
-pydantic-settings>=2.2.0
-sqlalchemy>=2.0.28
-alembic>=1.13.1
-pyjwt>=2.8.0
-bcrypt>=4.0.1
-python-multipart>=0.0.9
-opencv-python-headless>=4.9.0
-numpy>=1.26.0
-pillow>=10.2.0
-reportlab>=4.1.0
-openpyxl>=3.1.2
-httpx>=0.27.0
-python-dotenv>=1.0.1
-aiofiles>=23.2.1
-psycopg2-binary>=2.9.9
-pg8000>=1.30.0
-rapidocr-onnxruntime>=1.4.4
+# Lightweight dependencies for Vercel serverless deployment (< 100 MB total)
+# Full dependencies are in requirements-full.txt for local development
+
+# Core FastAPI (minimal)
+fastapi==0.110.0
+uvicorn==0.28.0
+pydantic==2.6.0
+pydantic-settings==2.2.0
+
+# Database (SQLite only)
+sqlalchemy==2.0.28
+
+# Authentication
+pyjwt==2.8.0
+bcrypt==4.1.2
+
+# File handling
+python-multipart==0.0.9
+aiofiles==23.2.1
+python-dotenv==1.0.1
+
+# HTTP client (lightweight)
+httpx==0.27.0
+
+# EXCLUDED FOR SERVERLESS (too heavy):
+# - opencv-python-headless (200+ MB)
+# - rapidocr-onnxruntime (150+ MB) 
+# - numpy (50+ MB)
+# - pillow (20+ MB)
+# - reportlab, openpyxl (20+ MB)
+# - psycopg2-binary (not needed with SQLite)
+# - alembic (migrations not needed in serverless)
+
+# Note: OCR functionality will be disabled in serverless mode
+# Use this deployment only for auth, user management, and reporting APIs

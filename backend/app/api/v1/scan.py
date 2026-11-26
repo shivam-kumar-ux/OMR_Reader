@@ -36,6 +36,20 @@ except Exception:
 
 router = APIRouter(prefix="/scan", tags=["Scanning & OMR Processing"])
 
+# Check if OCR dependencies are available
+OCR_AVAILABLE = cv2 is not None and OMREngine is not None
+
+def _check_ocr_available():
+    """Raise 503 if OCR dependencies are not available (e.g., in lightweight serverless)"""
+    if not OCR_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail="OCR functionality is not available in this deployment. "
+                   "This is a lightweight serverless instance with authentication and "
+                   "reporting APIs only. To use OMR scanning, deploy with full dependencies "
+                   "or run locally with requirements-full.txt."
+        )
+
 
 def _process_single_sheet_core(
     image_bytes: bytes,
@@ -259,6 +273,8 @@ def scan_single_sheet(
     """
     Process a single OMR sheet (image or single-page PDF).
     """
+    _check_ocr_available()
+    
     exam = db.query(Exam).filter(Exam.id == exam_id).first()
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -301,6 +317,8 @@ def scan_batch_sheets(
     Multi-page PDFs have each page processed as a separate sheet.
     One bad file never stops the batch.
     """
+    _check_ocr_available()
+    
     exam = db.query(Exam).filter(Exam.id == exam_id).first()
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")
@@ -389,6 +407,8 @@ def process_scanner_folder(
     """
     Imports and processes all pending files in the scanner hot-folder.
     """
+    _check_ocr_available()
+    
     exam = db.query(Exam).filter(Exam.id == exam_id).first()
     if not exam:
         raise HTTPException(status_code=404, detail="Exam not found")

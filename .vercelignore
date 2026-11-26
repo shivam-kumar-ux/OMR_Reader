@@ -1,27 +1,75 @@
-# Exclude heavy dev files from Vercel Serverless Function bundle (< 500 MB limit)
+# Exclude heavy files from Vercel bundle (keep under 500 MB)
+
+# Python virtual environments (CRITICAL - 300+ MB)
 .venv/
-.env
-.env.local
+venv/
+env/
+ENV/
+
+# Heavy development tools
 .git/
 .github/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Testing and samples
 tests/
 samples/
 docs/
+*.md
+!README.md
+
+# User data directories (can be huge)
 scans_input/
 storage/
-*.log
+uploads/
+processed/
+
+# Database files
 *.sqlite
 *.db
+*.db-shm
+*.db-wal
+
+# Logs and temp files
+*.log
+*.tmp
+*.temp
+
+# Python cache
 *.pyc
+*.pyo
+*.pyd
 __pycache__/
+*.egg-info/
+*.egg
+
+# Node.js (frontend is built separately)
 node_modules/
 frontend/node_modules/
 frontend/.vite/
-*.egg-info/
+frontend/dist/
+
+# Build artifacts
 dist/
 build/
+*.so
+*.dylib
+*.dll
+
+# IDE and OS
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Vercel files
+.vercel/

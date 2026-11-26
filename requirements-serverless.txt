@@ -1,0 +1,28 @@
+# Minimal dependencies for Vercel serverless (< 500 MB)
+# Core FastAPI
+fastapi>=0.110.0
+uvicorn>=0.28.0
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# Database (SQLite only for serverless)
+sqlalchemy>=2.0.28
+
+# Auth
+pyjwt>=2.8.0
+bcrypt>=4.0.1
+
+# File handling
+python-multipart>=0.0.9
+aiofiles>=23.2.1
+
+# Utilities
+python-dotenv>=1.0.1
+httpx>=0.27.0
+
+# Note: Heavy dependencies excluded for serverless:
+# - opencv-python-headless (200+ MB)
+# - rapidocr-onnxruntime (100+ MB)
+# - numpy, pillow (optional for basic API)
+# - reportlab, openpyxl (can be added if needed)
+# - psycopg2-binary, pg8000 (not needed with SQLite default)
